@@ -1,5 +1,6 @@
 from typing import List
 from model import SE2_Tree, SE2, CircleObstacleArray
+from polyplanner import local_planner_polynomial
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Patch
@@ -24,3 +25,19 @@ def draw_se2_tree(ax: plt.Axes, node: SE2_Tree, *args, **kwargs):
         draw_se2_tree(ax, child, *args, **kwargs)
         return h
 
+def draw_polynomial_path(ax: plt.Axes, T, poses: List[SE2], *args, **kwargs):
+    velocity = []
+
+    for i in range(len(poses) - 1):
+        p0 = np.array([poses[i].x, poses[i].y])
+        p1 = np.array([poses[i + 1].x, poses[i + 1].y])
+        dp = p1 - p0 # Vector between start and goal poses
+        dp = dp/np.linalg.norm(dp) # Unit vector of dp
+        velocity.append(dp)
+
+    velocity.append([0,0])
+
+    trajx = local_planner_polynomial(points=[pose.x for pose in poses], T=T, v_list=[v[0] for v in velocity])
+    trajy = local_planner_polynomial(points=[pose.y for pose in poses], T=T, v_list=[v[1] for v in velocity])
+    
+    ax.plot(trajx['x'], trajy['x'], label='trajectory', *args, **kwargs)
