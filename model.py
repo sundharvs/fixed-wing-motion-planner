@@ -36,6 +36,7 @@ def local_planner_straight_line(start: SE2, goal: SE2, distance: float, dtheta_m
     else:
         return SE2(p[0], p[1], theta)
 
+
 class SE2_Tree:
     """
     A tree of SE2 Poses

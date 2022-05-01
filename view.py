@@ -25,19 +25,32 @@ def draw_se2_tree(ax: plt.Axes, node: SE2_Tree, *args, **kwargs):
         draw_se2_tree(ax, child, *args, **kwargs)
         return h
 
-def draw_polynomial_path(ax: plt.Axes, T, poses: List[SE2], *args, **kwargs):
-    velocity = []
+def draw_polynomial_path(ax: plt.Axes, poses:List[SE2]):
+    t = []
+    t0 = 0
+    for i in range(len(poses)):
+        t.append(t0 + 1 * i)
 
     for i in range(len(poses) - 1):
-        p0 = np.array([poses[i].x, poses[i].y])
-        p1 = np.array([poses[i + 1].x, poses[i + 1].y])
-        dp = p1 - p0 # Vector between start and goal poses
-        dp = dp/np.linalg.norm(dp) # Unit vector of dp
-        velocity.append(dp)
+        start = poses[i]
+        end = poses[i+1]
+        #v_start = (poses[i+1] - poses[i])
+        #v_end = (poses[i + 2] - poses[i + 1]) / np.norm
 
-    velocity.append([0,0])
+        A = np.array([
+            [pow(t[i], 3), pow(t[i], 2), t[i], 1],
+            [pow(t[i+1], 3), pow(t[i+1], 2), t[i+1], 1],
+            [3*pow(t[i], 2), 2*t[i], 1, 0],
+            [3*pow(t[i+1], 2), 2*t[i+1], 1, 0],
+        ])
+        B_x = np.array([[start.x],[end.x],[np.cos(start.theta)],[np.cos(end.theta)]])
+        B_y = np.array([[start.y],[end.y],[np.sin(start.theta)],[np.sin(end.theta)]])
 
-    trajx = local_planner_polynomial(points=[pose.x for pose in poses], T=T, v_list=[v[0] for v in velocity])
-    trajy = local_planner_polynomial(points=[pose.y for pose in poses], T=T, v_list=[v[1] for v in velocity])
-    
-    ax.plot(trajx['x'], trajy['x'], label='trajectory', *args, **kwargs)
+        coeff_x = np.linalg.solve(A, B_x)
+        coeff_y = np.linalg.solve(A, B_y)
+
+        t_space = np.linspace(t[i], t[i + 1])
+        x = np.polyval(coeff_x, t_space)
+        y = np.polyval(coeff_y, t_space)
+
+        ax.plot(x, y, color='k')
