@@ -1,6 +1,5 @@
 from typing import List
 from model import SE2_Tree, SE2, CircleObstacleArray
-from polyplanner import local_planner_polynomial
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Patch
@@ -25,26 +24,27 @@ def draw_se2_tree(ax: plt.Axes, node: SE2_Tree, *args, **kwargs):
         draw_se2_tree(ax, child, *args, **kwargs)
         return h
 
-def draw_polynomial_path(ax: plt.Axes, poses:List[SE2]):
+def draw_polynomial_path(ax: plt.Axes, poses:List[SE2], *args, **kwargs):
     t = []
     t0 = 0
+    h = []
     for i in range(len(poses)):
         t.append(t0 + 1 * i)
 
     for i in range(len(poses) - 1):
         start = poses[i]
         end = poses[i+1]
-        #v_start = (poses[i+1] - poses[i])
-        #v_end = (poses[i + 2] - poses[i + 1]) / np.norm
 
         A = np.array([
-            [pow(t[i], 3), pow(t[i], 2), t[i], 1],
-            [pow(t[i+1], 3), pow(t[i+1], 2), t[i+1], 1],
-            [3*pow(t[i], 2), 2*t[i], 1, 0],
-            [3*pow(t[i+1], 2), 2*t[i+1], 1, 0],
+            [pow(t[i], 5), pow(t[i], 4), pow(t[i], 3), pow(t[i], 2), t[i], 1],
+            [pow(t[i+1], 5), pow(t[i+1], 4), pow(t[i+1], 3), pow(t[i+1], 2), t[i+1], 1],
+            [5*pow(t[i], 4), 4*pow(t[i], 3), 3*pow(t[i], 2), 2*t[i], 1, 0],
+            [5*pow(t[i+1], 4), 4*pow(t[i+1], 3), 3*pow(t[i+1], 2), 2*t[i+1], 1, 0],
+            [20*pow(t[i], 3), 12*pow(t[i], 2), 6*t[i], 2, 0 ,0],
+            [20*pow(t[i+1], 3), 12*pow(t[i+1], 2), 6*t[i + 1], 2, 0, 0]
         ])
-        B_x = np.array([[start.x],[end.x],[np.cos(start.theta)],[np.cos(end.theta)]])
-        B_y = np.array([[start.y],[end.y],[np.sin(start.theta)],[np.sin(end.theta)]])
+        B_x = np.array([[start.x],[end.x],[np.cos(start.theta)],[np.cos(end.theta)],[0],[0]])
+        B_y = np.array([[start.y],[end.y],[np.sin(start.theta)],[np.sin(end.theta)],[0],[0]])
 
         coeff_x = np.linalg.solve(A, B_x)
         coeff_y = np.linalg.solve(A, B_y)
@@ -53,4 +53,6 @@ def draw_polynomial_path(ax: plt.Axes, poses:List[SE2]):
         x = np.polyval(coeff_x, t_space)
         y = np.polyval(coeff_y, t_space)
 
-        ax.plot(x, y, color='k')
+        h_c = ax.plot(x, y, *args, **kwargs)
+        h.append(h_c)
+    return h
