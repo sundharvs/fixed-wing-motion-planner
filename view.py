@@ -25,19 +25,22 @@ def draw_se2_tree(ax: plt.Axes, node: SE2_Tree, *args, **kwargs):
         draw_se2_tree(ax, child, *args, **kwargs)
         return h
 
-def draw_polynomial_path(ax: plt.Axes, T, poses: List[SE2], *args, **kwargs):
-    velocity = []
+def draw_polynomial_path(ax: plt.Axes, poses:List[SE2]):
+    vel = 1
+    #waypoints = np.array([[pose.x, pose.y, vel*np.cos(pose.theta), vel*np.sin(pose.theta)] for pose in poses])
+    waypoints = np.array([
+    # px, py, vx, vy
+    [0, 0, 1, -1],
+    [1, 0, 1, 1],
+    [1, 1, -1, 1],
+    [0, 1, -1, -1],
+    [0, 0, 1, -1]
+    ])
 
-    for i in range(len(poses) - 1):
-        p0 = np.array([poses[i].x, poses[i].y])
-        p1 = np.array([poses[i + 1].x, poses[i + 1].y])
-        dp = p1 - p0 # Vector between start and goal poses
-        dp = dp/np.linalg.norm(dp) # Unit vector of dp
-        velocity.append(dp)
-
-    velocity.append([0,0])
-
-    trajx = local_planner_polynomial(points=[pose.x for pose in poses], T=T, v_list=[v[0] for v in velocity])
-    trajy = local_planner_polynomial(points=[pose.y for pose in poses], T=T, v_list=[v[1] for v in velocity])
+    T = [1, 1, 1, 1]
+    trajx = local_planner_polynomial(x_list=waypoints[:, 0], v_list=waypoints[:, 2], T=T, plot=True)
+    trajy = local_planner_polynomial(x_list=waypoints[:, 1], v_list=waypoints[:, 3], T=T, plot=True)
     
-    ax.plot(trajx['x'], trajy['x'], label='trajectory', *args, **kwargs)
+    ax.plot(trajx['x'], trajy['x'], label='trajectory')
+
+    return locals()

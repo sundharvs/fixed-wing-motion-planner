@@ -52,7 +52,7 @@ def main():
     h3 = draw_circle_obstacles(ax, obstacles, color='r', label='obstacles')[0]
     h4 = draw_se2_tree(ax, root, color='k', label='tree', linestyle='dashed')[0]
     #h5 = draw_se2_path(ax, closest.path(), color='g', label='path', linewidth=3, linestyle='dashed')
-    h6 = draw_polynomial_path(ax, [3] * (len(closest.path()) - 1), closest.path())
+    h6 = draw_polynomial_path(ax, closest.path())
     plt.xlabel('x, m')
     plt.ylabel('y, m')
     plt.legend(handles=[h1, h2, h3, h4], loc='upper left', ncol=2)
