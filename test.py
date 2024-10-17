@@ -1,6 +1,3 @@
-from cProfile import label
-from os import close
-from turtle import distance
 import numpy as np
 from model import SE2, SE2_Tree, CircleObstacleArray, local_planner_straight_line
 from view import draw_circle_obstacles, draw_polynomial_path, draw_se2, draw_se2_path, draw_se2_tree
